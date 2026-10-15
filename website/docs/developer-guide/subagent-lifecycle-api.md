@@ -51,8 +51,25 @@ The stable states are `PENDING`, `STARTING`, `RUNNING`, `SUCCEEDED`, `FAILED`,
 `cancel(handle, reason=...)` is cooperative: it asks the child agent to
 interrupt at its next safe boundary and returns `CANCEL_REQUESTED`; it never
 claims completion until `wait` or `result` observes a terminal state. Terminal
-results are immutable, idempotent, bounded to 32k characters, omit transcripts
-and hidden reasoning, and include a stable result hash.
+results are immutable, idempotent, omit transcripts and hidden reasoning, and
+include a stable result hash. Error text remains bounded to 32k characters.
+
+`summary` preserves the text finalized by native delegation without a second
+lifecycle cap. Native `delegation.max_summary_chars` and parent context-headroom
+budgeting still apply. When native delegation trims an answer,
+`summary_truncated` is `True` and `summary_full_path` carries the agent-visible
+path of its complete spill file, if storage succeeded. The summary retains its
+head/tail and recovery footer. If spill storage failed, the flag remains true,
+the path is `None`, and the footer explains the loss. No file is read by this API.
+When neither native budget limits the result, the summary can exceed 32k.
+
+These fields default to `False`/`None` and are appended to `SubagentResult` for
+positional compatibility. Older hosts may lack them; use
+`getattr(result, "summary_full_path", None)` and
+`getattr(result, "summary_truncated", False)` when supporting those hosts.
+These fields participate in the
+result hash, which remains idempotent within a retained result, not a
+cross-version identifier.
 
 This API is lifecycle-managed asynchronous execution. Child construction and
 completion use the same host-owned path as `delegate_task`, including parent

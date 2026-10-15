@@ -125,6 +125,8 @@ class SubagentResult:
     usage_metadata: Mapping[str, Any] = dataclasses.field(default_factory=dict)
     tool_execution_summary: Mapping[str, Any] = dataclasses.field(default_factory=dict)
     result_hash: Optional[str] = None
+    summary_truncated: bool = False
+    summary_full_path: Optional[str] = None
 
 
 @dataclasses.dataclass(frozen=True)
@@ -428,7 +430,12 @@ class SubagentLifecycleService:
             else:
                 state = SubagentState.SUCCEEDED if status == "completed" else SubagentState.FAILED
             fields: dict[str, Any] = dict(
-                summary=_clip(raw.get("summary")), error_message=_clip(raw.get("error") or None),
+                # The native finalizer already budgets/spills this text. A second clip can
+                # erase its recovery footer or discard output when native limits are disabled.
+                summary=str(raw["summary"]) if raw.get("summary") is not None else None,
+                summary_truncated=raw.get("summary_truncated") is True,
+                summary_full_path=raw.get("summary_full_path") if isinstance(raw.get("summary_full_path"), str) else None,
+                error_message=_clip(raw.get("error") or None),
                 error_classification=None if state == SubagentState.SUCCEEDED else status.upper(),
                 usage_metadata={"api_calls": raw.get("api_calls", 0)} if is_dict else {},
                 tool_execution_summary={"duration_seconds": raw.get("duration_seconds", 0)} if is_dict else {},
