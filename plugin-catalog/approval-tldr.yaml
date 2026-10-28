@@ -1,0 +1,21 @@
+name: approval-tldr
+repo: https://github.com/thebergerking91/hermes-approval-tldr
+sha: 657a3b1c8eb62f8b0e518468a4a9818c2a0065bf
+description: "Opt-in AI explanations for transport-eligible shell and execute_code approvals on native Hermes surfaces; AI text may be wrong, so read the command. Command text and flag reason go through ctx.llm to the configured provider, with best-effort host redaction. Native redispatch calls internal Hermes seams and affects the host approval queue and worker interrupt context; a host update can break them. Non-answers deny; transport failure falls back to the stock prompt only when configured, and may ask twice. Native plugin runtime does not directly read credentials, write files, launch processes or make other network calls."
+maintainer: thebergerking91
+tier: community
+category: tools
+requires_hermes: ">=0.22.2"
+docs_url: https://github.com/thebergerking91/hermes-approval-tldr#readme
+version: "1.0.0"
+image: https://raw.githubusercontent.com/thebergerking91/hermes-approval-tldr/657a3b1c8eb62f8b0e518468a4a9818c2a0065bf/docs/artwork/01-infographic-approval-tldr.png
+screenshots:
+  - https://raw.githubusercontent.com/thebergerking91/hermes-approval-tldr/657a3b1c8eb62f8b0e518468a4a9818c2a0065bf/docs/screenshots/native-desktop-approval.png
+platforms: []
+capabilities:
+  provides_tools: []
+  provides_hooks:
+    - pre_approval_request
+    - post_approval_response
+  provides_middleware: []
+  requires_env: []
